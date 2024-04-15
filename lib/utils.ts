@@ -109,7 +109,7 @@ export const getImageSize = (
 }
 
 // DOWNLOAD IMAGE
-export const download = (url: string, filename: sring) => {
+export const download = (url: string, filename: string) => {
   if (!url) {
     throw new Error('Resource URL not provided! You need to provide one')
   }
