@@ -5,13 +5,10 @@ import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { Webhook } from 'svix'
 
-import {
-  createUser,
-  deleteUser,
-  updateUser,
-} from '../../../../lib/actions/user.actions'
+import { createUser, deleteUser, updateUser } from '@/lib/actions/user.actions'
 
 export async function POST(req: Request) {
+  // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
   const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET
 
   if (!WEBHOOK_SECRET) {
@@ -37,7 +34,7 @@ export async function POST(req: Request) {
   const payload = await req.json()
   const body = JSON.stringify(payload)
 
-  //Create a new Svix instance with your secret
+  // Create a new Svix instance with your secret.
   const wh = new Webhook(WEBHOOK_SECRET)
 
   let evt: WebhookEvent
@@ -49,13 +46,14 @@ export async function POST(req: Request) {
       'svix-timestamp': svix_timestamp,
       'svix-signature': svix_signature,
     }) as WebhookEvent
-  } catch (error) {
-    console.error('error verifying webhok:', error)
+  } catch (err) {
+    console.error('Error verifying webhook:', err)
     return new Response('Error occured', {
       status: 400,
     })
   }
 
+  // Get the ID and type
   const { id } = evt.data
   const eventType = evt.type
 
@@ -104,7 +102,7 @@ export async function POST(req: Request) {
   }
 
   // DELETE
-  if (eventType == 'user.deleted') {
+  if (eventType === 'user.deleted') {
     const { id } = evt.data
 
     const deletedUser = await deleteUser(id!)
@@ -112,8 +110,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: 'OK', user: deletedUser })
   }
 
-  console.log(`Webhook with and ID if ${id} and type of ${eventType}`)
-  console.log('Webhook body: ', body)
+  console.log(`Webhook with and ID of ${id} and type of ${eventType}`)
+  console.log('Webhook body:', body)
 
   return new Response('', { status: 200 })
 }
